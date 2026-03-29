@@ -71,15 +71,12 @@ const sampleOrphanages = [
 
 const seedDB = async () => {
   try {
-    // Connect to DB
     await mongoose.connect(process.env.MONGO_URI);
     console.log("🔗 Connected to MongoDB...");
 
-    // Clear existing data (so you don't get duplicates)
     await Orphanage.deleteMany({});
     console.log("🗑️  Cleared existing orphanages...");
 
-    // Insert new data
     await Orphanage.insertMany(sampleOrphanages);
     console.log("🌱 Seeded orphanages successfully!");
 
