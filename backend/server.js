@@ -25,12 +25,10 @@ app.use("/api/donate/money", moneyDonationRoutes);
 app.use("/api/donate/item", itemDonationRoutes);
 app.use("/api/admin", verifyToken, adminRoutes);
 
-// Test route
 app.get("/", (req, res) => {
   res.send("DonateEase Backend Running 🚀");
 });
 
-// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected ✅"))
   .catch(err => console.log(err));
