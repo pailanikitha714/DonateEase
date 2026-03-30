@@ -19,14 +19,15 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const navClasses = `px-6 py-4 flex justify-between items-center transition-colors duration-300 ${
+  const navClasses = `px-4 py-3 flex flex-wrap justify-between items-center transition-colors duration-300 ${
     darkMode ? "bg-slate-900 text-white" : "bg-blue-600 text-white"
   }`;
 
   return (
     <nav className={navClasses}>
+      <div className="w-full max-w-7xl mx-auto flex flex-wrap justify-between items-center">
       <h1 className="text-xl font-bold">DonateEase</h1>
-      <div className="space-x-4 flex items-center">
+      <div className="flex flex-wrap gap-2 items-center justify-end">
         <button
           onClick={toggleTheme}
           className="hover:bg-white/10 p-2 rounded transition duration-200"
@@ -57,6 +58,7 @@ const Navbar = () => {
             </button>
           </>
         )}
+      </div>
       </div>
     </nav>
   );
