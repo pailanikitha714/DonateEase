@@ -17,8 +17,8 @@ const donateMoney = async (req, res) => {
     await newDonation.save();
     res.status(201).json({ message: "Donation successful", donation: newDonation });
   } catch (error) {
-    console.error("Donation Error:", error);
-    res.status(500).json({ message: "Server error while processing donation" });
+    console.error("FULL ERROR:", error);   
+    res.status(500).json({ message: error.message });
   }
 };
 
