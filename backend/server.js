@@ -7,7 +7,11 @@ const app = express();
 
 const morgan = require("morgan");
 
-app.use(cors());
+app.use(cors({
+  origin: "https://donate-ease-orcin.vercel.app",
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.use(morgan("dev"));
