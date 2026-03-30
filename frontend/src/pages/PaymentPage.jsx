@@ -106,7 +106,7 @@ const PaymentPage = () => {
                 type="button"
                 onClick={() => setPaymentMethod("NetBanking")}
                 className={`flex-1 p-3 rounded-lg border font-semibold transition ${
-                  paymentMethod === "Netbanking"
+                  paymentMethod === "NetBanking"
                     ? "border-blue-600 bg-blue-50 text-blue-700"
                     : "border-gray-300 hover:bg-gray-100"
                 }`}
