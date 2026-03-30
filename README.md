@@ -70,7 +70,7 @@ The project demonstrates strong concepts in **full-stack development, API design
 ## 👩‍💻 Author
 
 Paila Nikitha
-🎓 CSE Student | Full Stack Developer
+🎓 CSE Student 
 
 🔗 GitHub:
 https://github.com/pailanikitha714
