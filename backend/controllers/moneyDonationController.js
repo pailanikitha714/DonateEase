@@ -18,7 +18,10 @@ const donateMoney = async (req, res) => {
     res.status(201).json({ message: "Donation successful", donation: newDonation });
   } catch (error) {
     console.error("FULL ERROR:", error);   
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+        message: error.message,
+        stack: error.stack
+     });
   }
 };
 
