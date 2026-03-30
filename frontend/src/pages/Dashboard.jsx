@@ -139,7 +139,7 @@ const Dashboard = () => {
              />
           </div>
           <button
-            onClick={() => (window.location.href = "/my-donations")}
+            onClick={() => navigate("/my-donations")}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow transition whitespace-nowrap"
           >
             View My Donations
