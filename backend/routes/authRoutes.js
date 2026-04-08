@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-const router = express.Router(); // ✅ THIS WAS MISSING
+const router = express.Router();
 
 // REGISTER
 router.post("/register", async (req, res) => {
