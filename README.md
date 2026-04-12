@@ -62,17 +62,6 @@ It focuses on **real-world usability, clean UI, and scalable backend architectur
 
 ---
 
-## 📁 Project Structure (Simplified)
-
-DonateEase/
-│── frontend/ # React App
-│── backend/ # Node + Express API
-│── models/ # Mongoose Schemas
-│── routes/ # API Routes
-│── controllers/ # Business Logic
-
----
-
 ## 🚀 Future Improvements
 
 - 💳 Payment Gateway Integration (Razorpay / Stripe)  
