@@ -7,6 +7,7 @@ export default function Login() {
   const navigate = useNavigate();
   const { darkMode, toggleTheme } = useTheme(); 
   const [showPassword, setShowPassword] = useState(false);
+  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,6 +27,8 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(res.data.user));
       if (res.data.user.role === "admin") {
         navigate("/admin");
+      } else if (res.data.user.role === "orphanage") {
+        navigate("/orphanage-dashboard");
       } else {
         navigate("/dashboard");
       }
@@ -33,7 +36,6 @@ export default function Login() {
       alert(error.response?.data?.message || "Login failed");
     }
   };
-
   const containerBg = darkMode ? "bg-gray-900" : "bg-gray-100";
   const cardBg = darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900";
   const inputStyle = `w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition ${
@@ -41,25 +43,20 @@ export default function Login() {
       ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400" 
       : "bg-white border-gray-300 text-gray-900"
   }`;
-
   return (
-
-    <div className={`relative min-h-screen flex items-center justify-center transition-colors duration-300 ${containerBg}`}>
+    <div className={`relative min-h-screen flex items-center justify-center px-4 transition-colors duration-300 ${containerBg}`}>
       <button
         onClick={toggleTheme}
-        className="absolute top-6 right-6 p-3 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/30 transition shadow-lg text-2xl z-50"
-        title="Toggle Theme"
+        className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/30 shadow text-xl z-50"
       >
         {darkMode ? "🌞" : "🌙"}
       </button>
-
-      <div className={`${cardBg} p-8 rounded-2xl shadow-2xl w-full max-w-md transition-colors duration-300`}>        
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-blue-600 mb-2">DonateEase</h1>
+      <div className={`${cardBg} p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md`}>
+        <div className="text-center mb-6">
+          <h1 className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">DonateEase</h1>
           <p className="text-sm opacity-75">Welcome back! Please login to continue.</p>
         </div>
-
-        <form className="space-y-5" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-semibold mb-1">Email Address</label>
             <input
@@ -72,7 +69,6 @@ export default function Login() {
               required
             />
           </div>
-
           <div>
             <label className="block text-sm font-semibold mb-1">Password</label>
             <div className="relative">
@@ -103,7 +99,6 @@ export default function Login() {
               </button>
             </div>
           </div>
-
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-lg font-bold shadow-lg transform transition hover:-translate-y-1"
@@ -111,7 +106,6 @@ export default function Login() {
             Login
           </button>
         </form>
-
         <p className="text-center mt-6 text-sm">
           Don’t have an account?{" "}
           <Link to="/register" className="text-blue-500 font-bold hover:underline">

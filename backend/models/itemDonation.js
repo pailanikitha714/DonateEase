@@ -15,7 +15,6 @@ const itemDonationSchema = new mongoose.Schema({
 
     itemType: {
         type: String,
-        enum: ["clothes", "food", "books"],
         required: true
     },
 
@@ -39,7 +38,6 @@ const itemDonationSchema = new mongoose.Schema({
         enum: ["PENDING", "PICKED_UP", "DELIVERED"],
         default: "PENDING",
     },
-
 }, {timestamps: true});
 
 module.exports = mongoose.model("ItemDonation", itemDonationSchema);

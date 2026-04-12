@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-// We define the schema cleanly
 const userSchema = new mongoose.Schema({
     name : {
         type: String,
@@ -27,8 +26,15 @@ const userSchema = new mongoose.Schema({
 
     role: {
         type: String,
-        enum: ["user", "admin"],
+        enum: ["user", "admin", "orphanage"],
         default: "user"
+    },
+
+    verified: {
+        type: Boolean,
+        default: function () {
+            return this.role !== "orphanage"; 
+        }
     }
 });
 

@@ -23,7 +23,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const verifyToken = require("./middleware/verifyToken");
 
 app.use("/api/auth", authRoutes);
-app.use("/api/orphanages", orphanageRoutes);
+app.use("/api/orphanage", orphanageRoutes);
 app.use("/api/donate/money", moneyDonationRoutes);
 app.use("/api/donate/item", itemDonationRoutes);
 app.use("/api/admin", verifyToken, adminRoutes);
@@ -32,9 +32,11 @@ app.get("/", (req, res) => {
   res.send("DonateEase Backend Running 🚀");
 });
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  family: 4   
+})
   .then(() => console.log("MongoDB Connected ✅"))
-  .catch(err => console.log(err));
+  .catch(err => console.log("MongoDB ERROR ❌", err));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

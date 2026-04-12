@@ -9,19 +9,20 @@ const protect = async(req, res, next) => {
     ) {
         token = req.headers.authorization.split(" ")[1];
     }
-
     if(!token)
     {
         return res.status(401).json({message: "Not authorized, no token"});
     }
-
     try{
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id).select("-password");
+        const user = await User.findById(decoded.id).select("-password");
+        req.user = {
+            id: user._id,   
+            role: user.role,
+            userData: user
+        };
         next();
-    }
-    catch(error)
-    {
+    } catch(error) {
         return res.status(401).json({message: "Not authorized, token failed"});
     } 
 };

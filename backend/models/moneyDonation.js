@@ -18,18 +18,16 @@ const moneyDonationSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    
+    status: {
+        type: String
+    },
 
     paymentMethod: {
         type: String,
         enum: ["UPI","Card","NetBanking"],
         required: true
     }, 
-
-    status: {
-        type: String,
-        enum: ["PENDING", "SUCCESS", "REJECTED"],
-        default: "PENDING"
-    }
 }, {timestamps: true});
 
 module.exports = mongoose.model("MoneyDonation", moneyDonationSchema);

@@ -1,13 +1,13 @@
 import { Navigate } from "react-router-dom";
 
-const AdminRoute = ({ children }) => {
+const OrphanageRoute = ({ children }) => {
   const user = JSON.parse(localStorage.getItem("user"));
   if (!user) return <Navigate to="/login" />;
-  if (user.role !== "admin") {
-    if (user.role === "orphanage") return <Navigate to="/orphanage-dashboard" />;
+  if (user.role !== "orphanage") {
+    if (user.role === "admin") return <Navigate to="/admin" />;
     return <Navigate to="/dashboard" />;
   }
   return children;
 };
 
-export default AdminRoute;
+export default OrphanageRoute;

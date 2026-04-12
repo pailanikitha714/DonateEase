@@ -2,8 +2,10 @@ const ItemDonation = require("../models/itemDonation");
 
 const donateItem = async (req, res) => {
     try {
+        if (req.user.role !== "user") {
+          return res.status(403).json({ message: "Only users can donate" });
+        }
         const {orphanageId, itemType, pickupAddress, pickupDate, timeSlot} = req.body;
-
         if(!orphanageId || !itemType || !pickupAddress)
         {
             return res.status(400).json({message: "All fields are required"});
@@ -31,7 +33,6 @@ const getMyItemDonations = async (req, res) => {
   try {
     const donations = await ItemDonation.find({ user: req.user.id })
       .populate("orphanage", "name address");
-
     res.status(200).json(donations);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -44,7 +45,6 @@ const getAllItemDonations = async (req, res) => {
       .populate("user", "name email")
       .populate("orphanage", "name")
       .sort({ createdAt: -1 });
-
     res.json(donations);
   } catch (error) {
     console.error("Error fetching all item donations:", error);

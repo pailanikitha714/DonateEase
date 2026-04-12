@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 
 const orphanageSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: false
+    },
+    
     name: {
         type: String,
         required: true
@@ -11,12 +17,12 @@ const orphanageSchema = new mongoose.Schema({
         required: true
     },
 
-    city: {
+    pincode: {
         type: String,
         required: true
     },
 
-    pincode: {
+    phone: {
         type: String,
         required: true
     },
@@ -24,6 +30,17 @@ const orphanageSchema = new mongoose.Schema({
     needs: {
         type: [String],
         default: []
+    },
+
+    status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending"
+    },
+
+    verified: {
+        type: Boolean,
+        default: false
     }
 });
 

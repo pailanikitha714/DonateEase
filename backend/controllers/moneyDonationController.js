@@ -2,6 +2,9 @@ const MoneyDonation = require("../models/moneyDonation");
 const Orphanage = require("../models/Orphanage")
 const donateMoney = async (req, res) => {
   try {
+    if (req.user.role !== "user") {
+      return res.status(403).json({ message: "Only users can donate" });
+    }
     const { orphanageId, amount, paymentMethod } = req.body;
     const orphanage = await Orphanage.findById(orphanageId);
     if (!orphanage) {
@@ -12,7 +15,7 @@ const donateMoney = async (req, res) => {
       orphanage: orphanageId,
       amount: amount,
       paymentMethod: paymentMethod,
-      status: "SUCCESS" 
+      status: "success"
     });
     await newDonation.save();
     res.status(201).json({ message: "Donation successful", donation: newDonation });

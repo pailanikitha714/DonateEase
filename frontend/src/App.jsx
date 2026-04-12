@@ -2,13 +2,16 @@ import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import RegisterOrphanage from "./pages/RegisterOrphanage";
 import Dashboard from "./pages/Dashboard";
 import MyDonations from "./pages/MyDonation";
 import AdminDashboard from "./pages/AdminDashboard";
+import OrphanageDashboard from "./pages/OrphanageDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import Navbar from "./components/Navbar";
 import PaymentPage from "./pages/PaymentPage";
+import OrphanageRoute from "./components/OrphanageRoute";
 
 function App() {
   return (
@@ -17,7 +20,21 @@ function App() {
         <Route path="/" element={<Register />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-
+        <Route path="/register-orphanage" element={<RegisterOrphanage />} />
+        <Route 
+          path="/orphanage-dashboard" 
+          element={
+              <ProtectedRoute>
+                <OrphanageRoute>
+                  <>
+                    <Navbar />
+                    <OrphanageDashboard />
+                  </>
+                </OrphanageRoute>
+              </ProtectedRoute>
+            } 
+        />
+        
         <Route
           path="/dashboard"
           element={

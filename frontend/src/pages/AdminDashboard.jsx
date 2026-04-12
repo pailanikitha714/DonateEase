@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/axios";
 import { useTheme } from "../context/ThemeContext";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const { darkMode } = useTheme();
@@ -9,12 +10,23 @@ const AdminDashboard = () => {
   const [moneyDonations, setMoneyDonations] = useState([]);
   const [itemDonations, setItemDonations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pendingOrphanages, setPendingOrphanages] = useState([]); 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "admin") {
+      navigate("/login"); 
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
         const statsRes = await api.get("/admin/stats");
-        setStats(statsRes.data);
+        setStats(statsRes.data || {});
+        const pendingRes = await api.get("/admin/orphanages/pending");
+        setPendingOrphanages(pendingRes.data);
         const [moneyRes, itemRes] = await Promise.all([
           api.get("/donate/money/all"),
           api.get("/donate/item/all")
@@ -51,6 +63,29 @@ const AdminDashboard = () => {
     }
   };
 
+  const approveOrphanage = async (id) => {
+    try {
+      await api.patch(`/admin/orphanage/approve/${id}`);
+      alert("Orphanage Approved ✅");
+      setPendingOrphanages(prev => prev.filter(o => o._id !== id));
+    } catch (err) {
+      alert("Approval failed");
+    }
+  };
+
+  const rejectOrphanage = async (id) => {
+    try {
+      await api.patch(`/admin/orphanage/reject/${id}`);
+      alert("Orphanage Rejected ❌");
+
+      setPendingOrphanages(prev =>
+        prev.filter(o => o._id !== id)
+      );
+    } catch (err) {
+      alert("Rejection failed");
+    }
+  };
+
   const containerBg = darkMode ? "bg-gray-900" : "bg-gray-100";
   const sidebarBg = darkMode ? "bg-gray-800" : "bg-slate-800"; 
   const contentBg = darkMode ? "bg-gray-900" : "bg-gray-50";
@@ -77,7 +112,9 @@ const AdminDashboard = () => {
   };
 
   if (loading) return <div className={`p-8 text-center ${containerBg}`}>Loading Control Center...</div>;
-
+  const formatCurrency = (num) => {
+    return Number(num || 0).toLocaleString("en-IN");
+  };
   return (
     <div className={`flex min-h-screen transition-colors duration-300 ${containerBg}`}>
       
@@ -101,6 +138,12 @@ const AdminDashboard = () => {
           >
             📦 Item Donations
           </button>
+          <button 
+            onClick={() => setActiveTab("orphanages")}
+            className={`w-full text-left px-4 py-3 rounded-lg transition flex items-center gap-3 ${activeTab === "orphanages" ? "bg-blue-600" : "hover:bg-gray-700"}`}
+          >
+            🏢 Orphanage Approvals
+          </button>
         </nav>
         <div className="p-4 text-xs text-gray-400">
           Logged in as Administrator
@@ -111,13 +154,13 @@ const AdminDashboard = () => {
       <main className="flex-1 p-8 overflow-y-auto">
         
         {/* KPI CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className={`${statsCard} border-l-4 border-green-500`}>
-            <p className="text-sm text-gray-600 dark:text-gray-300 font-semibold">Total Revenue</p>
-            <h3 className="text-3xl font-bold text-green-600 mt-2">₹{stats?.totalDonations || 0}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-stretch">
+          <div className={`${statsCard} border-l-4 border-green-500 overflow-hidden`}>
+            <p className={`text-sm font-semibold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>Total Revenue</p>
+            <h3 className="text-2xl md:text-3xl font-bold text-green-600 mt-2 break-words">₹{formatCurrency(stats?.totalDonations || 0)}</h3>
           </div>
           <div className={`${statsCard} border-l-4 border-blue-500`}>
-            <p className="text-sm text-gray-600 dark:text-gray-300 font-semibold">Items Processed</p>
+            <p className={`text-sm font-semibold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>Items Processed</p>
             <h3 className="text-3xl font-bold text-blue-600 mt-2">{stats?.itemsDonated || 0}</h3>
           </div>
         </div>
@@ -128,13 +171,19 @@ const AdminDashboard = () => {
             onClick={() => setActiveTab("money")}
             className={`flex-1 py-2 rounded font-bold ${activeTab === "money" ? "bg-blue-600 text-white" : "bg-gray-200 text-black"}`}
           >
-            Money
+            💰 Money Donations
           </button>
           <button 
             onClick={() => setActiveTab("items")}
             className={`flex-1 py-2 rounded font-bold ${activeTab === "items" ? "bg-blue-600 text-white" : "bg-gray-200 text-black"}`}
           >
-            Items
+            📦 Item Donations
+          </button>
+          <button 
+            onClick={() => setActiveTab("orphanages")}
+            className={`flex-1 py-2 rounded font-bold ${activeTab === "orphanages" ? "bg-blue-600 text-white" : "bg-gray-200 text-black"}`}
+          >
+            🏢 Orphanage Approvals
           </button>
         </div>
 
@@ -144,50 +193,108 @@ const AdminDashboard = () => {
           {/* --- MONEY SECTION --- */}
           {activeTab === "money" && (
             <div>
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-bold">Money Donation Requests</h2>
-                <p className="text-sm opacity-60">Review and approve transactions.</p>
+              <div className={`p-6 border-b ${ darkMode ? "border-gray-700" : "border-gray-200" }`}>
+                <h2 className="text-xl font-bold">Money Donations</h2>
+                <p className="text-sm opacity-60">View all user donation transactions.</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-gray-50 dark:bg-gray-700/50">
+                  <thead
+                    className={`${
+                      darkMode
+                        ? "bg-gray-800 border-b border-gray-700"
+                        : "bg-gray-100 border-b border-gray-300"
+                    }`}
+                  >
                     <tr>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">User</th>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">Amount</th>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">Method</th>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">Current Status</th>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">Action</th>
+                      <th className={`p-4 text-xs uppercase tracking-wider font-bold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>User</th>
+                      <th className={`p-4 text-xs uppercase tracking-wider font-bold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>Orphanage</th>
+                      <th className={`p-4 text-xs uppercase tracking-wider font-bold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>Amount</th>
+                      <th className={`p-4 text-xs uppercase tracking-wider font-bold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>Method</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700 text-gray-800 dark:text-gray-100">
+                  <tbody
+                    className={`divide-y ${
+                      darkMode ? "divide-gray-700 text-gray-200" : "divide-gray-300 text-gray-800"
+                    }`}
+                  >
                     {moneyDonations.length === 0 ? (
-                      <tr><td colSpan="5" className="p-8 text-center opacity-50">No transactions found.</td></tr>
+                      <tr>
+                        <td colSpan="3" className="p-8 text-center opacity-50">
+                          No transactions found.
+                        </td>
+                      </tr>
                     ) : (
                       moneyDonations.map((d) => (
-                        <tr 
+                        <tr
                           key={d._id}
-                          className="transition hover:bg-gray-300 dark:hover:bg-gray-600"
+                          className={`transition ${
+                            darkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
+                          }`}
                         >
-                          <td className="p-4 font-semibold text-gray-500 dark:text-gray-100">{d.user?.name}</td>
-                          <td className="p-4 font-bold text-green-600 dark:text-green-500">{d.amount}</td>
-                          <td className="p-4 dark:text-white">
-                            <span className="text-xs px-2 py-1 bg-gray-200 rounded dark:bg-gray-700">{d.paymentMethod}</span>
-                          </td>
+                          <td className="p-4 font-semibold">{d.user?.name}</td>
+                          <td className="p-4">{d.orphanage?.name || "N/A"}</td>
+                          <td className="p-4 font-bold text-green-600 break-words whitespace-nowrap">₹{formatCurrency(d.amount)}</td>
+                          <td className="p-4">{d.paymentMethod}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          {/* --- ITEMS SECTION --- */}
+          {activeTab === "items" && (
+            <div>
+              <div className={`p-6 border-b ${ darkMode ? "border-gray-700" : "border-gray-200" }`}>
+                <h2 className="text-xl font-bold">Item Donations</h2>
+                <p className="text-sm opacity-60">View and track item donation deliveries.</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead
+                    className={`${
+                      darkMode
+                        ? "bg-gray-800 border-b border-gray-700"
+                        : "bg-gray-100 border-b border-gray-300"
+                    }`}
+                  >
+                    <tr>
+                      <th className={`p-4 text-xs uppercase tracking-wider font-bold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>User</th>
+                      <th className={`p-4 text-xs uppercase tracking-wider font-bold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>Orphanage</th>
+                      <th className={`p-4 text-xs uppercase tracking-wider font-bold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>Item</th>
+                      <th className={`p-4 text-xs uppercase tracking-wider font-bold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>Address</th>
+                      <th className={`p-4 text-xs uppercase tracking-wider font-bold ${ darkMode ? "text-gray-300" : "text-gray-700" }`}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    className={`divide-y ${
+                      darkMode
+                        ? "divide-gray-700 text-gray-200"
+                        : "divide-gray-300 text-gray-800"
+                    }`}
+                  >
+                    {itemDonations.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="p-8 text-center opacity-50">No item donations found.</td>
+                      </tr>
+                    ) : (
+                      itemDonations.map((d) => (
+                        <tr
+                          key={d._id}
+                          className={`transition ${
+                            darkMode
+                              ? "hover:bg-gray-700 odd:bg-gray-800 even:bg-gray-900"
+                              : "hover:bg-gray-200 odd:bg-white even:bg-gray-50"
+                          }`}
+                        >
+                          <td className="p-4 font-semibold">{d.user?.name}</td>
+                          <td className="p-4">{d.orphanage?.name || "N/A"}</td>
+                          <td className="p-4 capitalize font-bold text-blue-600 dark:text-blue-400">{d.itemType}</td>
+                          <td className="p-4 text-sm max-w-xs truncate opacity-80">{d.pickupAddress}</td>
                           <td className="p-4">
-                            <span className={getStatusBadge(d.status)}>
-                              {d.status}
-                            </span>
-                          </td>
-                          <td className="p-4">
-                            <select
-                              value={d.status}
-                              onChange={(e) => handleMoneyStatusChange(d._id, e.target.value)}
-                              className="text-sm border p-1 rounded bg-white hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-gray-900"
-                            >
-                              <option value="PENDING" className="bg-white text-black dark:bg-gray-700 dark:text-white">Pending</option>
-                              <option value="SUCCESS" className="bg-white text-black dark:bg-gray-700 dark:text-white">Success</option>
-                              <option value="REJECTED" className="bg-white text-black dark:bg-gray-700 dark:text-white">Reject</option>
-                            </select>
+                            <span className={`text-xs px-2 py-1 rounded font-semibold ${getStatusBadge(d.deliveryStatus)}`}>{d.deliveryStatus}</span>
                           </td>
                         </tr>
                       ))
@@ -197,58 +304,39 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
-
-          {/* --- ITEMS SECTION --- */}
-          {activeTab === "items" && (
+          {activeTab === "orphanages" && (
             <div>
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-bold">Item Donation Requests</h2>
-                <p className="text-sm opacity-60">Manage pickup and delivery status.</p>
+              <div className={`p-6 border-b ${ darkMode ? "border-gray-700" : "border-gray-200" }`}>
+                <h2 className="text-xl font-bold">Pending Orphanages</h2>
+                <p className="text-sm opacity-60">Approve organizations before they go live.</p>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 dark:bg-gray-700/50">
-                    <tr>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">User</th>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">Item</th>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">Address</th>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">Status</th>
-                      <th className="p-4 text-xs uppercase font-bold text-gray-600 dark:text-gray-200">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700 text-gray-800 dark:text-gray-100">
-                    {itemDonations.length === 0 ? (
-                      <tr><td colSpan="5" className="p-8 text-center opacity-50">No item donations found.</td></tr>
-                    ) : (
-                      itemDonations.map((d) => (
-                        <tr 
-                        key={d._id}
-                        className="transition hover:bg-gray-300 dark:hover:bg-gray-600"
-                      >
-                          <td className="p-4 font-semibold text-gray-500 dark:text-gray-100">{d.user?.name}</td>
-                          <td className="p-4 capitalize font-bold text-blue-600 dark:text-blue-400">{d.itemType}</td>
-                          <td className="p-4 text-sm max-w-xs truncate text-gray-500 dark:text-gray-200">{d.pickupAddress}</td>
-                          <td className="p-4">
-                             <span className={getStatusBadge(d.deliveryStatus)}>
-                              {d.deliveryStatus}
-                            </span>
-                          </td>
-                          <td className="p-4">
-                            <select
-                              value={d.deliveryStatus}
-                              onChange={(e) => handleItemStatusChange(d._id, e.target.value)}
-                              className="text-sm border p-1 rounded bg-white hover:bg-gray-100 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 text-gray-900"
-                            >
-                              <option value="PENDING" className="bg-white text-black dark:bg-gray-700 dark:text-white">Pending</option>
-                              <option value="PICKED_UP" className="bg-white text-black dark:bg-gray-700 dark:text-white">Picked Up</option>
-                              <option value="DELIVERED" className="bg-white text-black dark:bg-gray-700 dark:text-white">Delivered</option>
-                            </select>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+              <div className="p-6 space-y-4">
+                {pendingOrphanages.length === 0 ? (
+                  <p className="text-center opacity-50">No pending approvals 🎉</p>
+                ) : (
+                  pendingOrphanages.map((o) => (
+                    <div key={o._id} className="p-4 border rounded-lg flex justify-between items-center">
+                      <div>
+                        <h3 className="font-bold">{o.name}</h3>
+                        <p className="text-sm opacity-70">{o.city}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => approveOrphanage(o._id)}
+                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => rejectOrphanage(o._id)}
+                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -258,4 +346,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default AdminDashboard; 

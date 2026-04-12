@@ -7,6 +7,7 @@ const Navbar = () => {
   const location = useLocation();
   const { darkMode, toggleTheme } = useTheme();
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const user = JSON.parse(localStorage.getItem("user") || "null");
 
   useEffect(() => {
     setToken(localStorage.getItem("token"));
@@ -30,7 +31,7 @@ const Navbar = () => {
       <div className="flex flex-wrap gap-2 items-center justify-end">
         <button
           onClick={toggleTheme}
-          className="hover:bg-white/10 p-2 rounded transition duration-200"
+          className="p-2 rounded cursor-pointer"
           title="Toggle Theme"
         >
           {darkMode ? "☀️" : "🌙"}
@@ -39,17 +40,14 @@ const Navbar = () => {
           <>
             <Link to="/login" className="hover:text-gray-200">Login</Link>
             <Link to="/register" className="hover:text-gray-200">Register</Link>
+            <Link to="/register-orphanage">
+              <button className="bg-green-500 px-4 py-2 rounded text-white">
+                Register Orphanage
+              </button>
+            </Link>
           </>
         ) : (
           <>
-            {JSON.parse(localStorage.getItem("user"))?.role === "admin" ? (
-            <Link to="/admin" className="font-bold text-yellow-300 hover:text-yellow-100 border border-yellow-500/50 px-3 py-1 rounded">
-              Admin Panel ⚙️
-            </Link>
-          ) : (
-            <Link to="/dashboard" className="hover:text-gray-200">Dashboard</Link>
-          )}
-            <Link to="/my-donations" className="hover:text-gray-200">My Donations</Link>
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"

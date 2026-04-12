@@ -15,6 +15,6 @@ router.get("/my", protect, getMyItemDonations);
 
 router.get("/all", protect, adminOnly, getAllItemDonations);
 
-router.put("/:id/status", protect, adminOnly, updateDeliveryStatus);
+router.put("/:id/status", protect, updateDeliveryStatus);
 
 module.exports = router;

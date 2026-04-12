@@ -9,7 +9,12 @@ const PaymentPage = () => {
   const { darkMode } = useTheme();
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("UPI"); 
-  
+  const [amountInput, setAmountInput] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const formatCurrency = (num) => {
+    return new Intl.NumberFormat("en-IN").format(num);
+  };
   if (!state || !state.orphanageId) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -18,9 +23,7 @@ const PaymentPage = () => {
       </div>
     );
   }
-
   const { orphanageId, amount, orphanageName } = state;
-
   const handlePayment = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -40,7 +43,6 @@ const PaymentPage = () => {
           },
         }
       );
-
       alert(`Payment of ₹${amount} Successful via ${paymentMethod}! 🎉`);
       navigate("/dashboard");
     } catch (error) {
@@ -56,7 +58,24 @@ const PaymentPage = () => {
       ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400" 
       : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
   }`;
-
+  const handleAmountChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ""); 
+    setAmountInput(value);
+  };
+  const handleCardChange = (e) => {
+    let value = e.target.value.replace(/\D/g, "");
+    value = value.match(/.{1,4}/g)?.join(" ") || "";
+    setCardNumber(value);
+  };
+  const handleExpiryChange = (e) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length >= 2) {
+      let month = value.slice(0, 2);
+      if (month > 12) month = "12";
+      value = month + (value.length > 2 ? "/" + value.slice(2, 4) : "");
+    }
+    setExpiry(value);
+  };
   return (
     <div className={`min-h-screen p-4 md:p-8 transition-colors duration-300 ${containerBg}`}>
       <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-8">
@@ -68,16 +87,14 @@ const PaymentPage = () => {
           </div>
           <div className="flex justify-between items-center mb-4 text-xl font-bold">
             <span>Total Amount:</span>
-            <span className="text-blue-600">₹{amount}</span>
+            <span className="text-blue-600">₹{formatCurrency(amount)}</span>
           </div>
           <p className="text-sm opacity-75">
             Your contribution helps provide food, clothes, and education to children in need.
           </p>
         </div>
-
         <div className={`flex-1 p-6 rounded-xl border shadow-sm ${cardBg}`}>
           <h2 className="text-2xl font-bold mb-6">Payment Method</h2>
-          
           <form onSubmit={handlePayment} className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-3">
               <button
@@ -114,7 +131,6 @@ const PaymentPage = () => {
                 Netbanking
               </button>
             </div>
-
             {paymentMethod === "UPI" && (
               <div className="space-y-4">
                 <div>
@@ -128,27 +144,30 @@ const PaymentPage = () => {
                 </div>
               </div>
             )}
-
             {paymentMethod === "Card" && (
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold mb-1">Card Number (12 digits) <span className="text-red-500">*</span></label>
-                  <input 
-                    type="text" 
-                    placeholder="0000 0000 0000" 
+                  <input
+                    type="text"
+                    placeholder="0000 0000 0000"
+                    value={cardNumber}
+                    onChange={handleCardChange}
+                    maxLength="14"
                     required
-                    maxLength="12"
-                    className={inputStyle} 
+                    className={inputStyle}
                   />
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <label className="block text-sm font-semibold mb-1">Expiry <span className="text-red-500">*</span></label>
                     <input 
-                      type="text" 
-                      placeholder="MM/YY" 
-                      required
+                      type="text"
+                      placeholder="MM/YY"
+                      value={expiry}
+                      onChange={handleExpiryChange}
                       maxLength="5"
+                      required
                       className={inputStyle} 
                     />
                   </div>
@@ -165,7 +184,6 @@ const PaymentPage = () => {
                 </div>
               </div>
             )}
-
             {paymentMethod === "NetBanking" && (
               <div className="space-y-4">
                 <div>
@@ -188,7 +206,6 @@ const PaymentPage = () => {
                 </p>
               </div>
             )}
-
             <button
               type="submit"
               disabled={loading}
@@ -203,7 +220,7 @@ const PaymentPage = () => {
                   Processing...
                 </>
               ) : (
-                `Pay ₹${amount}`
+                `Pay ₹${formatCurrency(amount)}`
               )}
             </button>
           </form>
